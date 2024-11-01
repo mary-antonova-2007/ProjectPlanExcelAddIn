@@ -1,16 +1,21 @@
 ﻿using Microsoft.Office.Interop.Excel;
-using Microsoft.Office.Tools.Excel;
 using Microsoft.Office.Tools.Ribbon;
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 using Application = Microsoft.Office.Interop.Excel.Application;
-using Worksheet = Microsoft.Office.Interop.Excel.Worksheet;
 
 namespace ProjectPlanExcelAddIn
 {
     public partial class RibbonPlan
     {
+        private string TemplateID
+        {
+            get
+            {
+                return Globals.ThisAddIn.GetTemplateID(Globals.ThisAddIn.Application.ActiveWorkbook);
+            }
+        }
         private void RibbonPlan_Load(object sender, RibbonUIEventArgs e)
         {
         }
@@ -52,6 +57,62 @@ namespace ProjectPlanExcelAddIn
             }
         }
 
+        public void CheckTemplateAndConfigure()
+        {
+            Application excelApp = Globals.ThisAddIn.Application;
+            Workbook activeWorkbook = excelApp.ActiveWorkbook;
+
+            if (activeWorkbook == null)
+            {
+                MessageBox.Show("Нет открытой книги для проверки шаблона.", "Ошибка");
+                return;
+            }
+
+            // Получаем тему книги
+            string workbookTheme = GetWorkbookTheme(activeWorkbook);
+
+            // Настраиваем функционал в зависимости от темы
+            if (workbookTheme == "plan")
+            {
+                EnablePlanFunctions();
+                MessageBox.Show("Планер активен");
+            }
+            else
+            {
+                DisableAllFunctions();
+                MessageBox.Show("Тема книги не распознана. Функционал ограничен.", "Предупреждение");
+            }
+        }
+
+        private string GetWorkbookTheme(Workbook workbook)
+        {
+            try
+            {
+                // Получаем значение свойства "Тема" из документа
+                return workbook.BuiltinDocumentProperties["Subject"].Value.ToString();
+            }
+            catch
+            {
+                return string.Empty; // Если тема не задана, возвращаем пустую строку
+            }
+        }
+
+        private void EnablePlanFunctions()
+        {
+            // Включаем кнопки и функции, связанные с темой "plan"
+
+        }
+
+        private void DisableAllFunctions()
+        {
+            // Отключаем все кнопки и функции
+
+        }
+
+        private void buttonCheckTemplate_Click(object sender, RibbonControlEventArgs e)
+        {
+            CheckTemplateAndConfigure();
+        }
         private void buttonAddDays_Click(object sender, RibbonControlEventArgs e)
         {
             RunDateShifter();
