@@ -4,6 +4,7 @@ using Microsoft.Office.Interop.Excel;
 
 namespace ProjectPlanExcelAddIn
 {
+    // Календарь
     public class BusinessCalendar
     {
         private readonly HashSet<DateTime> _holidays;
