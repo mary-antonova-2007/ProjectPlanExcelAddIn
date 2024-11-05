@@ -35,27 +35,27 @@
         private void InitializeComponent()
         {
             this.tabPlan = this.Factory.CreateRibbonTab();
-            this.group1 = this.Factory.CreateRibbonGroup();
+            this.groupDates = this.Factory.CreateRibbonGroup();
             this.buttonAddDays = this.Factory.CreateRibbonButton();
             this.groupPlan = this.Factory.CreateRibbonGroup();
             this.buttonAutoPlan = this.Factory.CreateRibbonButton();
             this.tabPlan.SuspendLayout();
-            this.group1.SuspendLayout();
+            this.groupDates.SuspendLayout();
             this.groupPlan.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabPlan
             // 
-            this.tabPlan.Groups.Add(this.group1);
+            this.tabPlan.Groups.Add(this.groupDates);
             this.tabPlan.Groups.Add(this.groupPlan);
             this.tabPlan.Label = "Планирование";
             this.tabPlan.Name = "tabPlan";
             // 
-            // group1
+            // groupDates
             // 
-            this.group1.Items.Add(this.buttonAddDays);
-            this.group1.Label = "Даты";
-            this.group1.Name = "group1";
+            this.groupDates.Items.Add(this.buttonAddDays);
+            this.groupDates.Label = "Даты";
+            this.groupDates.Name = "groupDates";
             // 
             // buttonAddDays
             // 
@@ -83,8 +83,8 @@
             this.Load += new Microsoft.Office.Tools.Ribbon.RibbonUIEventHandler(this.RibbonPlan_Load);
             this.tabPlan.ResumeLayout(false);
             this.tabPlan.PerformLayout();
-            this.group1.ResumeLayout(false);
-            this.group1.PerformLayout();
+            this.groupDates.ResumeLayout(false);
+            this.groupDates.PerformLayout();
             this.groupPlan.ResumeLayout(false);
             this.groupPlan.PerformLayout();
             this.ResumeLayout(false);
@@ -94,7 +94,7 @@
         #endregion
 
         internal Microsoft.Office.Tools.Ribbon.RibbonTab tabPlan;
-        internal Microsoft.Office.Tools.Ribbon.RibbonGroup group1;
+        internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupDates;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonAddDays;
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupPlan;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonAutoPlan;
