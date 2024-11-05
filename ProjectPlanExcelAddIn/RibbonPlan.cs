@@ -75,12 +75,10 @@ namespace ProjectPlanExcelAddIn
             if (workbookTheme == "plan")
             {
                 EnablePlanFunctions();
-                MessageBox.Show("Планер активен");
             }
             else
             {
                 DisableAllFunctions();
-                MessageBox.Show("Тема книги не распознана. Функционал ограничен.", "Предупреждение");
             }
         }
 
@@ -100,13 +98,13 @@ namespace ProjectPlanExcelAddIn
         private void EnablePlanFunctions()
         {
             // Включаем кнопки и функции, связанные с темой "plan"
-
+            groupPlan.Visible = true;
         }
 
         private void DisableAllFunctions()
         {
             // Отключаем все кнопки и функции
-
+            groupPlan.Visible = false;
         }
 
         private void buttonCheckTemplate_Click(object sender, RibbonControlEventArgs e)

@@ -8,7 +8,7 @@ namespace ProjectPlanExcelAddIn
     {
         private void ThisAddIn_Startup(object sender, System.EventArgs e)
         {
-            this.Application.WorkbookOpen += new AppEvents_WorkbookOpenEventHandler(Application_WorkbookOpen);
+            this.Application.WorkbookActivate += new AppEvents_WorkbookActivateEventHandler(Application_WorkbookOpen);
         }
 
         private void Application_WorkbookOpen(Workbook workbook)
