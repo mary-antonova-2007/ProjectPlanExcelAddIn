@@ -1,5 +1,6 @@
 ﻿using Microsoft.Office.Interop.Excel;
 using Microsoft.Office.Tools.Ribbon;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
@@ -144,6 +145,30 @@ namespace ProjectPlanExcelAddIn
             {
                 MessageBox.Show($"Произошла ошибка при планировании задач: {ex.Message}", "Ошибка");
             }
+        }
+        
+        private async void buttonGPTQuestion_Click(object sender, RibbonControlEventArgs e)
+        {
+            var manager = Globals.ThisAddIn.GPTManager;
+
+            // Получение текста из выбранной ячейки как запроса
+            string prompt = Globals.ThisAddIn.Application.ActiveCell.Text;
+            string selectedRange = Globals.ThisAddIn.Application.Selection.Address;
+
+            // Отправка запроса и получение ответа
+            string response = await manager.GetResponseAsync(prompt, selectedRange);
+
+            // Выполнение команд, если ответ содержит JSON-команды
+            if (!string.IsNullOrWhiteSpace(response))
+            {
+                manager.ExecuteCommands(response);
+            }
+        }
+
+        private void buttonGPTSettings_Click(object sender, RibbonControlEventArgs e)
+        {
+            GPTSettingsForm form = new GPTSettingsForm();
+            form.ShowDialog();
         }
     }
 }

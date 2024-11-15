@@ -6,9 +6,11 @@ namespace ProjectPlanExcelAddIn
 {
     public partial class ThisAddIn
     {
+        public GPTManager GPTManager { get; set; }
         private void ThisAddIn_Startup(object sender, System.EventArgs e)
         {
             this.Application.WorkbookActivate += new AppEvents_WorkbookActivateEventHandler(Application_WorkbookOpen);
+            GPTManager = new GPTManager();
         }
 
         private void Application_WorkbookOpen(Workbook workbook)
