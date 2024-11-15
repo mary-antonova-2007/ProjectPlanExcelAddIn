@@ -3,6 +3,12 @@ using Microsoft.Office.Tools.Ribbon;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
+using System.Net.Http.Headers;
+using System.Net.Http;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Application = Microsoft.Office.Interop.Excel.Application;
 
@@ -59,7 +65,7 @@ namespace ProjectPlanExcelAddIn
         }
 
         public void CheckTemplateAndConfigure()
-        {
+        {                                                                                              
             Application excelApp = Globals.ThisAddIn.Application;
             Workbook activeWorkbook = excelApp.ActiveWorkbook;
 
@@ -112,6 +118,7 @@ namespace ProjectPlanExcelAddIn
         {
             CheckTemplateAndConfigure();
         }
+
         private void buttonAddDays_Click(object sender, RibbonControlEventArgs e)
         {
             RunDateShifter();
@@ -170,5 +177,6 @@ namespace ProjectPlanExcelAddIn
             GPTSettingsForm form = new GPTSettingsForm();
             form.ShowDialog();
         }
+
     }
 }

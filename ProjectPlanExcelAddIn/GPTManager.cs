@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -142,5 +143,62 @@ public class GPTManager
     {
         // Примерный подсчет токенов: каждый 4-5 символов можно считать за 1 токен.
         return input.Length / 4;
+    }
+    public async Task<string> DescribeImageAsync(string filePath)
+    {
+        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
+        try
+        {
+            using (var client = new HttpClient())
+            {
+                // Устанавливаем авторизацию
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ApiKey);
+
+                // Загружаем изображение и кодируем в Base64
+                byte[] imageData = File.ReadAllBytes(filePath);
+                string base64Image = Convert.ToBase64String(imageData);
+
+                // Формируем тело запроса
+                var requestBody = new
+                {
+                    model = "gpt-4o", // Замените модель на доступную
+                    messages = new[]
+                    {
+                    new
+                    {
+                        role = "user",
+                        content = $"Опиши изображение: [data:image/jpeg;base64,{base64Image}]"
+                    }
+                },
+                    max_tokens = 1000 // Устанавливаем ограничение на количество токенов в ответе
+                };
+
+                // Сериализуем тело запроса
+                string jsonContent = JsonConvert.SerializeObject(requestBody);
+                var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                // Отправляем POST-запрос
+                HttpResponseMessage response = await client.PostAsync("https://api.openai.com/v1/chat/completions", content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    // Читаем и возвращаем тело ответа
+                    string responseBody = await response.Content.ReadAsStringAsync();
+                    return responseBody;
+                }
+                else
+                {
+                    // В случае ошибки возвращаем детали
+                    string errorDetails = await response.Content.ReadAsStringAsync();
+                    return $"Ошибка при получении ответа: {response.ReasonPhrase}. Детали: {errorDetails}";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // Обработка исключений
+            return $"Произошла ошибка: {ex.Message}";
+        }
     }
 }
