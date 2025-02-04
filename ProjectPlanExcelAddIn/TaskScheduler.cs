@@ -16,7 +16,7 @@ namespace ProjectPlanExcelAddIn
 
         public void ScheduleTasks(Worksheet worksheet)
         {
-            // Инициализируем календарь, если он еще не создан
+            int maxIndex = worksheet.UsedRange.Rows.Count;
             if (_calendar == null)
             {
                 _calendar = new BusinessCalendar();
@@ -24,6 +24,7 @@ namespace ProjectPlanExcelAddIn
 
             int rowIndex = 7;
             List<Task> currentGroupTasks = new List<Task>();
+            List<(DateTime Start, DateTime End)> occupiedDates = new List<(DateTime, DateTime)>();
             DateTime? groupStartDate = null;
 
             while (true)
@@ -33,73 +34,124 @@ namespace ProjectPlanExcelAddIn
                 Range priorityCell = worksheet.Cells[rowIndex, 6];
                 Range startDateCell = worksheet.Cells[rowIndex, 7];
                 Range endDateCell = worksheet.Cells[rowIndex, 8];
+                Range groupNameCell = worksheet.Cells[rowIndex, 1]; // Столбец A - название группы
 
-                // Проверяем, является ли строка пустой (отсутствует наименование задачи)
+                // Если строка пустая
                 if (string.IsNullOrWhiteSpace(taskNameCell.Text.ToString()))
                 {
-                    // Если у нас есть собранные задачи группы, планируем их
+                    // Если текущая группа задач не пуста, планируем ее
                     if (currentGroupTasks.Count > 0)
                     {
-                        PlanGroupTasks(currentGroupTasks, groupStartDate ?? DateTime.Today.AddDays(1));
+                        PlanGroupTasks(currentGroupTasks, groupStartDate ?? DateTime.Today.AddDays(1), occupiedDates);
                         currentGroupTasks.Clear();
+                        occupiedDates.Clear();
                     }
 
-                    // Проверяем наличие даты начала планирования для новой группы
-                    if (DateTime.TryParse(startDateCell.Text.ToString(), out DateTime parsedDate))
+                    // Пропускаем пустые строки, пока не найдем строку с названием группы
+                    while (string.IsNullOrWhiteSpace(groupNameCell.Text.ToString()))
                     {
-                        groupStartDate = parsedDate;
+                        rowIndex++;
+                        groupNameCell = worksheet.Cells[rowIndex, 1];
+                        if (rowIndex > maxIndex) break;
                     }
-                    else
+
+                    // Если мы нашли строку с названием группы, то устанавливаем дату начала для этой группы
+                    if (rowIndex <= maxIndex && !string.IsNullOrWhiteSpace(groupNameCell.Text.ToString()))
                     {
-                        groupStartDate = DateTime.Today.AddDays(1);
-                        startDateCell.Value = groupStartDate;
+                        // Проверяем, есть ли уже дата начала в строке с названием группы
+                        if (string.IsNullOrWhiteSpace(startDateCell.Text.ToString()))
+                        {
+                            groupStartDate = DateTime.Today.AddDays(1); // Завтрашний день
+                            startDateCell.Value = groupStartDate; // Заполняем дату начала только в строку с названием группы
+                        }
+                        else
+                        {
+                            if (DateTime.TryParse(startDateCell.Text.ToString(), out DateTime parsedDate))
+                            {
+                                groupStartDate = parsedDate;
+                            }
+                        }
                     }
                 }
                 else
                 {
-                    int priority = 1;
-                    // Собираем данные задачи
-                    if (int.TryParse(daysCell.Text.ToString(), out int duration) &&
-                        int.TryParse(priorityCell.Text.ToString(), out priority))
+                    // Проверяем, заполнены ли даты для задачи
+                    if (DateTime.TryParse(startDateCell.Text.ToString(), out DateTime existingStart))
                     {
-                        var task = new Task(rowIndex, taskNameCell.Text.ToString(), duration, priority);
-                        currentGroupTasks.Add(task);
+                        // Инициализируем existingEnd значением по умолчанию
+                        DateTime existingEnd = existingStart;
+
+                        if (DateTime.TryParse(endDateCell.Text.ToString(), out existingEnd))
+                        {
+                            // Если обе даты заполнены, добавляем их в список занятых и пропускаем задачу
+                            occupiedDates.Add((existingStart, existingEnd));
+                            Console.WriteLine($"Задача уже запланирована: {taskNameCell.Text}, {existingStart} - {existingEnd}");
+                        }
+                        else
+                        {
+                            // Если дата окончания не задана, добавляем только дату начала
+                            occupiedDates.Add((existingStart, existingStart));
+                            Console.WriteLine($"Задача запланирована только с датой начала: {taskNameCell.Text}, {existingStart}");
+                        }
+                    }
+                    else
+                    {
+                        // Если даты не заполнены, собираем данные задачи
+                        if (int.TryParse(daysCell.Text.ToString(), out int duration))
+                        {
+                            // Инициализируем priority значением по умолчанию
+                            int priority = 1;
+
+                            if (int.TryParse(priorityCell.Text.ToString(), out priority))
+                            {
+                                currentGroupTasks.Add(new Task(rowIndex, taskNameCell.Text.ToString(), duration, priority));
+                                Console.WriteLine($"Добавлена задача для планирования: {taskNameCell.Text}, Дней: {duration}, Приоритет: {priority}");
+                            }
+                            else
+                            {
+                                Console.WriteLine($"Приоритет задачи {taskNameCell.Text} не задан, используется значение по умолчанию: {priority}");
+                                currentGroupTasks.Add(new Task(rowIndex, taskNameCell.Text.ToString(), duration, priority));
+                            }
+                        }
                     }
                 }
 
                 rowIndex++;
 
-                // Проверяем, не достигли ли конца данных
-                if (string.IsNullOrWhiteSpace(taskNameCell.Text.ToString()) && string.IsNullOrWhiteSpace(worksheet.Cells[rowIndex, 4].Text.ToString()))
+                // Проверяем конец данных
+                if (string.IsNullOrWhiteSpace(taskNameCell.Text.ToString()) &&
+                    string.IsNullOrWhiteSpace(worksheet.Cells[rowIndex, 4].Text.ToString()))
                 {
-                    // Планируем последнюю группу, если она не была обработана
+                    // Планируем оставшиеся задачи
                     if (currentGroupTasks.Count > 0)
                     {
-                        PlanGroupTasks(currentGroupTasks, groupStartDate ?? DateTime.Today.AddDays(1));
+                        PlanGroupTasks(currentGroupTasks, groupStartDate ?? DateTime.Today.AddDays(1), occupiedDates);
                     }
                     break;
                 }
+
+                if (rowIndex > maxIndex) break;
             }
         }
 
-        private void PlanGroupTasks(List<Task> tasks, DateTime startDate)
-        {
-            // Сортируем задачи по приоритету (чем меньше, тем срочнее)
-            tasks.Sort((a, b) => a.Priority.CompareTo(b.Priority));
 
+
+        private void PlanGroupTasks(List<Task> tasks, DateTime startDate, List<(DateTime Start, DateTime End)> occupiedDates)
+        {
+            tasks.Sort((a, b) => a.Priority.CompareTo(b.Priority));
             DateTime currentDate = startDate;
+
             foreach (var task in tasks)
             {
-                // Находим ближайший рабочий день для начала задачи, если текущая дата - выходной
-                currentDate = _calendar.ShiftDate(currentDate, 0);
+                while (!IsDateAvailable(currentDate, task.Duration, occupiedDates))
+                {
+                    currentDate = _calendar.ShiftDate(currentDate.AddDays(1), 0);
+                    Console.WriteLine($"Перенос на следующий день: {currentDate}");
+                }
 
-                // Устанавливаем дату начала задачи
                 task.StartDate = currentDate;
-
-                // Рассчитываем дату окончания задачи с учетом количества дней на выполнение
                 task.EndDate = _calendar.ShiftDate(task.StartDate, task.Duration - 1);
 
-                // Обновляем ячейки в Excel
                 var worksheet = _excelApp.ActiveSheet as Worksheet;
                 if (worksheet != null)
                 {
@@ -107,11 +159,25 @@ namespace ProjectPlanExcelAddIn
                     worksheet.Cells[task.RowIndex, 8].Value = task.EndDate;
                 }
 
-                // Обновляем текущую дату для следующей задачи
+                Console.WriteLine($"Запланирована задача: {task.Name}, Начало: {task.StartDate}, Конец: {task.EndDate}");
+                occupiedDates.Add((task.StartDate, task.EndDate));
                 currentDate = task.EndDate.AddDays(1);
-                // Переносим текущую дату на следующий рабочий день, если она попадает на выходной
                 currentDate = _calendar.ShiftDate(currentDate, 0);
             }
+        }
+
+        private bool IsDateAvailable(DateTime startDate, int duration, List<(DateTime Start, DateTime End)> occupiedDates)
+        {
+            DateTime endDate = _calendar.ShiftDate(startDate, duration - 1);
+
+            foreach (var (start, end) in occupiedDates)
+            {
+                if (startDate <= end && endDate >= start)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }

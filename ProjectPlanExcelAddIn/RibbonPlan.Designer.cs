@@ -42,10 +42,15 @@
             this.ChatGPTGroup = this.Factory.CreateRibbonGroup();
             this.buttonGPTQuestion = this.Factory.CreateRibbonButton();
             this.buttonGPTSettings = this.Factory.CreateRibbonButton();
+            this.group1 = this.Factory.CreateRibbonGroup();
+            this.buttonMoveRowUp = this.Factory.CreateRibbonButton();
+            this.buttonMoveRowDown = this.Factory.CreateRibbonButton();
+            this.buttonAddRowAbove = this.Factory.CreateRibbonButton();
             this.tabPlan.SuspendLayout();
             this.groupDates.SuspendLayout();
             this.groupPlan.SuspendLayout();
             this.ChatGPTGroup.SuspendLayout();
+            this.group1.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabPlan
@@ -53,6 +58,7 @@
             this.tabPlan.Groups.Add(this.groupDates);
             this.tabPlan.Groups.Add(this.groupPlan);
             this.tabPlan.Groups.Add(this.ChatGPTGroup);
+            this.tabPlan.Groups.Add(this.group1);
             this.tabPlan.Label = "Планирование";
             this.tabPlan.Name = "tabPlan";
             // 
@@ -99,6 +105,32 @@
             this.buttonGPTSettings.Name = "buttonGPTSettings";
             this.buttonGPTSettings.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonGPTSettings_Click);
             // 
+            // group1
+            // 
+            this.group1.Items.Add(this.buttonMoveRowUp);
+            this.group1.Items.Add(this.buttonMoveRowDown);
+            this.group1.Items.Add(this.buttonAddRowAbove);
+            this.group1.Label = "Перемещение строк";
+            this.group1.Name = "group1";
+            // 
+            // buttonMoveRowUp
+            // 
+            this.buttonMoveRowUp.Label = "Строки вверх";
+            this.buttonMoveRowUp.Name = "buttonMoveRowUp";
+            this.buttonMoveRowUp.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.MoveRowsUp);
+            // 
+            // buttonMoveRowDown
+            // 
+            this.buttonMoveRowDown.Label = "Строки вниз";
+            this.buttonMoveRowDown.Name = "buttonMoveRowDown";
+            this.buttonMoveRowDown.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.MoveRowsDown);
+            // 
+            // buttonAddRowAbove
+            // 
+            this.buttonAddRowAbove.Label = "Добавить строку выше";
+            this.buttonAddRowAbove.Name = "buttonAddRowAbove";
+            this.buttonAddRowAbove.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.InsertRowAbove);
+            // 
             // RibbonPlan
             // 
             this.Name = "RibbonPlan";
@@ -113,6 +145,8 @@
             this.groupPlan.PerformLayout();
             this.ChatGPTGroup.ResumeLayout(false);
             this.ChatGPTGroup.PerformLayout();
+            this.group1.ResumeLayout(false);
+            this.group1.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -127,6 +161,10 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup ChatGPTGroup;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonGPTQuestion;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonGPTSettings;
+        internal Microsoft.Office.Tools.Ribbon.RibbonGroup group1;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonMoveRowUp;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonMoveRowDown;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonAddRowAbove;
     }
 
     partial class ThisRibbonCollection

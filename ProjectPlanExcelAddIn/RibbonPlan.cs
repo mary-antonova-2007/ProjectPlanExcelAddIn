@@ -178,5 +178,116 @@ namespace ProjectPlanExcelAddIn
             form.ShowDialog();
         }
 
+
+
+        public void CutAndPasteAbove()
+        {
+            var excel = Globals.ThisAddIn.Application;
+            var sheet = excel.ActiveSheet as Worksheet;
+            var selection = excel.Selection as Range;
+
+            if (selection == null) return;
+
+            // Получаем всю строку, если выделены ячейки
+            Range selectedRows = selection.EntireRow;
+            int firstRow = selectedRows.Row;
+
+            // Вставляем выше
+            int targetRow = firstRow - 1;
+            if (targetRow < 1) return; // Не двигаем, если это первая строка
+
+            // Вырезаем и вставляем выше
+            selectedRows.Cut();
+            sheet.Rows[targetRow].Insert(XlInsertShiftDirection.xlShiftDown);
+        }
+        public void MoveRowsUp(object sender, RibbonControlEventArgs e)
+        {
+            var excel = Globals.ThisAddIn.Application;
+            var sheet = excel.ActiveSheet as Worksheet;
+            var selection = excel.Selection as Range;
+
+            if (selection == null) return;
+
+            Range rows = selection.EntireRow;
+            int firstRowIndex = rows.Row;
+            int rowCount = rows.Rows.Count;
+
+            if (firstRowIndex <= 1) return; // Нельзя двигать выше первой строки
+
+            Range aboveRows = sheet.Rows[firstRowIndex - 1];
+
+            // Вырезаем выделенные строки
+            rows.Cut();
+            aboveRows.Insert(XlInsertShiftDirection.xlShiftDown);
+
+            // Обновляем выделение, выделяя строки на новом месте
+            sheet.Range[sheet.Rows[firstRowIndex - 1], sheet.Rows[firstRowIndex + rowCount - 2]].Select();
+        }
+
+        public void MoveRowsDown(object sender, RibbonControlEventArgs e)
+        {
+            var excel = Globals.ThisAddIn.Application;
+            var sheet = excel.ActiveSheet as Worksheet;
+            var selection = excel.Selection as Range;
+
+            if (selection == null) return;
+
+            Range rows = selection.EntireRow;
+            int firstRowIndex = rows.Row;
+            int rowCount = rows.Rows.Count;
+            int lastRow = sheet.Rows.Count;
+
+            if (firstRowIndex + rowCount > lastRow) return; // Если строки внизу нет, не двигаем
+
+            Range belowRows = sheet.Rows[firstRowIndex + rowCount];
+
+            // Вырезаем и вставляем строки
+            belowRows.Cut();
+            rows.Insert(XlInsertShiftDirection.xlShiftDown);
+
+            // Обновляем выделение на новые строки
+            sheet.Range[sheet.Rows[firstRowIndex + 1], sheet.Rows[firstRowIndex + rowCount]].Select();
+        }
+        public void InsertRowAbove(object sender, RibbonControlEventArgs e)
+        {
+            var excel = Globals.ThisAddIn.Application;
+            var sheet = excel.ActiveSheet as Worksheet;
+            var selection = excel.Selection as Range;
+
+            if (selection == null) return;
+
+            Range row = selection.EntireRow;
+            int rowIndex = row.Row;
+
+            // Отключаем обновление экрана и вычисления для ускорения
+            excel.ScreenUpdating = false;
+            excel.Calculation = XlCalculation.xlCalculationManual;
+
+            // Копируем строку и вставляем выше
+            row.Copy();
+            Range newRow = sheet.Rows[rowIndex];
+            newRow.Insert(XlInsertShiftDirection.xlShiftDown);
+
+            // Очищаем все значения в новой строке, но оставляем формулы
+            try
+            {
+                Range constants = newRow.SpecialCells(XlCellType.xlCellTypeConstants);
+                if (constants != null)
+                {
+                    constants.ClearContents();
+                }
+            }
+            catch (System.Runtime.InteropServices.COMException)
+            {
+                // Если нет значений, просто пропускаем
+            }
+
+            // Обновляем выделение
+            newRow.Select();
+
+            // Включаем обновление экрана и вычисления обратно
+            excel.ScreenUpdating = true;
+            excel.Calculation = XlCalculation.xlCalculationAutomatic;
+        }
     }
 }
