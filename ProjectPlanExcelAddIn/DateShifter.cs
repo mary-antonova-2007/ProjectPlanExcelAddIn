@@ -37,5 +37,25 @@ namespace ProjectPlanExcelAddIn
                 }
             }
         }
+        public void ShiftDatesInRows(Range selectedRange)
+        {
+            foreach (Range row in selectedRange.Rows)
+            {
+                foreach (Range cell in row.Cells)
+                {
+                    DateTime cellDate = DateTime.MaxValue;
+                    // Пропускаем пустые ячейки или ячейки, не содержащие даты
+                    if (cell.Value == null || !DateTime.TryParse(cell.Value.ToString(), out cellDate))
+                        continue;
+
+                    if (cellDate != DateTime.MinValue)
+                    {
+                        // Сдвигаем дату с учетом рабочего календаря
+                        cell.Value = _businessCalendar.ShiftDate(cellDate, _shiftDays);
+                    }
+                        
+                }
+            }
+        }
     }
 }

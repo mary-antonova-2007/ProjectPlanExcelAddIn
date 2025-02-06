@@ -11,6 +11,7 @@
             : base(Globals.Factory.GetRibbonFactory())
         {
             InitializeComponent();
+            
         }
 
         /// <summary> 
@@ -42,15 +43,18 @@
             this.ChatGPTGroup = this.Factory.CreateRibbonGroup();
             this.buttonGPTQuestion = this.Factory.CreateRibbonButton();
             this.buttonGPTSettings = this.Factory.CreateRibbonButton();
-            this.group1 = this.Factory.CreateRibbonGroup();
+            this.groupMove = this.Factory.CreateRibbonGroup();
             this.buttonMoveRowUp = this.Factory.CreateRibbonButton();
             this.buttonMoveRowDown = this.Factory.CreateRibbonButton();
             this.buttonAddRowAbove = this.Factory.CreateRibbonButton();
+            this.buttonShiftDatesRight = this.Factory.CreateRibbonButton();
+            this.buttonShiftDatesLeft = this.Factory.CreateRibbonButton();
+            this.separator1 = this.Factory.CreateRibbonSeparator();
             this.tabPlan.SuspendLayout();
             this.groupDates.SuspendLayout();
             this.groupPlan.SuspendLayout();
             this.ChatGPTGroup.SuspendLayout();
-            this.group1.SuspendLayout();
+            this.groupMove.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabPlan
@@ -58,7 +62,7 @@
             this.tabPlan.Groups.Add(this.groupDates);
             this.tabPlan.Groups.Add(this.groupPlan);
             this.tabPlan.Groups.Add(this.ChatGPTGroup);
-            this.tabPlan.Groups.Add(this.group1);
+            this.tabPlan.Groups.Add(this.groupMove);
             this.tabPlan.Label = "Планирование";
             this.tabPlan.Name = "tabPlan";
             // 
@@ -105,31 +109,56 @@
             this.buttonGPTSettings.Name = "buttonGPTSettings";
             this.buttonGPTSettings.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonGPTSettings_Click);
             // 
-            // group1
+            // groupMove
             // 
-            this.group1.Items.Add(this.buttonMoveRowUp);
-            this.group1.Items.Add(this.buttonMoveRowDown);
-            this.group1.Items.Add(this.buttonAddRowAbove);
-            this.group1.Label = "Перемещение строк";
-            this.group1.Name = "group1";
+            this.groupMove.Items.Add(this.buttonShiftDatesLeft);
+            this.groupMove.Items.Add(this.buttonShiftDatesRight);
+            this.groupMove.Items.Add(this.separator1);
+            this.groupMove.Items.Add(this.buttonMoveRowUp);
+            this.groupMove.Items.Add(this.buttonMoveRowDown);
+            this.groupMove.Items.Add(this.buttonAddRowAbove);
+            this.groupMove.KeyTip = "W";
+            this.groupMove.Label = "Перемещение строк";
+            this.groupMove.Name = "groupMove";
             // 
             // buttonMoveRowUp
             // 
+            this.buttonMoveRowUp.KeyTip = "W1";
             this.buttonMoveRowUp.Label = "Строки вверх";
             this.buttonMoveRowUp.Name = "buttonMoveRowUp";
             this.buttonMoveRowUp.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.MoveRowsUp);
             // 
             // buttonMoveRowDown
             // 
+            this.buttonMoveRowDown.KeyTip = "S1";
             this.buttonMoveRowDown.Label = "Строки вниз";
             this.buttonMoveRowDown.Name = "buttonMoveRowDown";
             this.buttonMoveRowDown.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.MoveRowsDown);
             // 
             // buttonAddRowAbove
             // 
+            this.buttonAddRowAbove.KeyTip = "Q1";
             this.buttonAddRowAbove.Label = "Добавить строку выше";
             this.buttonAddRowAbove.Name = "buttonAddRowAbove";
             this.buttonAddRowAbove.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.InsertRowAbove);
+            // 
+            // buttonShiftDatesRight
+            // 
+            this.buttonShiftDatesRight.KeyTip = "D1";
+            this.buttonShiftDatesRight.Label = "Сдвинуть +1 день";
+            this.buttonShiftDatesRight.Name = "buttonShiftDatesRight";
+            this.buttonShiftDatesRight.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.ShiftDatesRight);
+            // 
+            // buttonShiftDatesLeft
+            // 
+            this.buttonShiftDatesLeft.KeyTip = "A1";
+            this.buttonShiftDatesLeft.Label = "Сдвинуть -1 день";
+            this.buttonShiftDatesLeft.Name = "buttonShiftDatesLeft";
+            this.buttonShiftDatesLeft.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.ShiftDatesLeft);
+            // 
+            // separator1
+            // 
+            this.separator1.Name = "separator1";
             // 
             // RibbonPlan
             // 
@@ -145,8 +174,8 @@
             this.groupPlan.PerformLayout();
             this.ChatGPTGroup.ResumeLayout(false);
             this.ChatGPTGroup.PerformLayout();
-            this.group1.ResumeLayout(false);
-            this.group1.PerformLayout();
+            this.groupMove.ResumeLayout(false);
+            this.groupMove.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -161,10 +190,13 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup ChatGPTGroup;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonGPTQuestion;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonGPTSettings;
-        internal Microsoft.Office.Tools.Ribbon.RibbonGroup group1;
+        internal Microsoft.Office.Tools.Ribbon.RibbonGroup groupMove;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonMoveRowUp;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonMoveRowDown;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonAddRowAbove;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonShiftDatesRight;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonShiftDatesLeft;
+        internal Microsoft.Office.Tools.Ribbon.RibbonSeparator separator1;
     }
 
     partial class ThisRibbonCollection

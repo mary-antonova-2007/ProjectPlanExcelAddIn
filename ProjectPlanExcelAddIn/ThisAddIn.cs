@@ -1,27 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Windows.Forms;
 using Microsoft.Office.Interop.Excel;
+using System.Runtime.InteropServices;
 
 namespace ProjectPlanExcelAddIn
 {
     public partial class ThisAddIn
     {
         public GPTManager GPTManager { get; set; }
+
         private void ThisAddIn_Startup(object sender, System.EventArgs e)
         {
             this.Application.WorkbookActivate += new AppEvents_WorkbookActivateEventHandler(Application_WorkbookOpen);
             GPTManager = new GPTManager();
         }
 
+        private void ThisAddIn_Shutdown(object sender, System.EventArgs e)
+        {
+            this.Application.WorkbookOpen -= new AppEvents_WorkbookOpenEventHandler(Application_WorkbookOpen);
+        }
+
         private void Application_WorkbookOpen(Workbook workbook)
         {
             // Выполняем проверку темы и настройку кнопок
             Globals.Ribbons.RibbonPlan.CheckTemplateAndConfigure();
-        }
-
-        private void ThisAddIn_Shutdown(object sender, System.EventArgs e)
-        {
-            this.Application.WorkbookOpen -= new AppEvents_WorkbookOpenEventHandler(Application_WorkbookOpen);
         }
 
         public string GetTemplateID(Workbook workbook)

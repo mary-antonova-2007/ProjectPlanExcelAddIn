@@ -23,11 +23,48 @@ namespace ProjectPlanExcelAddIn
                 return Globals.ThisAddIn.GetTemplateID(Globals.ThisAddIn.Application.ActiveWorkbook);
             }
         }
+
         private void RibbonPlan_Load(object sender, RibbonUIEventArgs e)
         {
+
         }
 
-        public static void RunDateShifter()
+        private void RowsDateShifter(int countDays)
+        {
+            // Получаем ссылку на приложение Excel
+            Application excelApp = Globals.ThisAddIn.Application;
+            Range selectedRange = excelApp.Selection as Range;
+
+            // Проверяем, что диапазон выделен
+            if (selectedRange != null)
+            {
+                // Создаем экземпляр DateShifter с переданным значением для сдвига
+                var dateShifter = new DateShifter(new BusinessCalendar(), countDays);
+
+                // Сдвигаем даты в выбранных строках
+                dateShifter.ShiftDatesInRows(selectedRange);
+
+                // Сообщение об успешном завершении
+                MessageBox.Show("Даты успешно сдвинуты!", "Готово");
+            }
+            else
+            {
+                // Если диапазон не выбран
+                MessageBox.Show("Пожалуйста, выделите диапазон ячеек.", "Ошибка");
+            }
+        }
+
+        private void ShiftDatesLeft(object sender, RibbonControlEventArgs e)
+        {
+            RowsDateShifter(-1);
+        }
+
+        private void ShiftDatesRight(object sender, RibbonControlEventArgs e)
+        {
+            RowsDateShifter(1);
+        }
+
+        private void RunDateShifter(object sender, RibbonControlEventArgs e)
         {
             // Создаем экземпляр пользовательской формы InputForm
             var inputForm = new InputForm { LabelInfo = "Введите количество дней для сдвига:" };
@@ -121,7 +158,7 @@ namespace ProjectPlanExcelAddIn
 
         private void buttonAddDays_Click(object sender, RibbonControlEventArgs e)
         {
-            RunDateShifter();
+            RunDateShifter(sender, e);
         }
 
         private void buttonAutoPlan_Click(object sender, RibbonControlEventArgs e)
@@ -178,28 +215,6 @@ namespace ProjectPlanExcelAddIn
             form.ShowDialog();
         }
 
-
-
-        public void CutAndPasteAbove()
-        {
-            var excel = Globals.ThisAddIn.Application;
-            var sheet = excel.ActiveSheet as Worksheet;
-            var selection = excel.Selection as Range;
-
-            if (selection == null) return;
-
-            // Получаем всю строку, если выделены ячейки
-            Range selectedRows = selection.EntireRow;
-            int firstRow = selectedRows.Row;
-
-            // Вставляем выше
-            int targetRow = firstRow - 1;
-            if (targetRow < 1) return; // Не двигаем, если это первая строка
-
-            // Вырезаем и вставляем выше
-            selectedRows.Cut();
-            sheet.Rows[targetRow].Insert(XlInsertShiftDirection.xlShiftDown);
-        }
         public void MoveRowsUp(object sender, RibbonControlEventArgs e)
         {
             var excel = Globals.ThisAddIn.Application;
@@ -248,6 +263,7 @@ namespace ProjectPlanExcelAddIn
             // Обновляем выделение на новые строки
             sheet.Range[sheet.Rows[firstRowIndex + 1], sheet.Rows[firstRowIndex + rowCount]].Select();
         }
+
         public void InsertRowAbove(object sender, RibbonControlEventArgs e)
         {
             var excel = Globals.ThisAddIn.Application;
@@ -265,8 +281,10 @@ namespace ProjectPlanExcelAddIn
 
             // Копируем строку и вставляем выше
             row.Copy();
-            Range newRow = sheet.Rows[rowIndex];
-            newRow.Insert(XlInsertShiftDirection.xlShiftDown);
+
+            // Вставляем строку выше текущей строки
+            Range newRow = sheet.Rows[rowIndex]; // Указываем строку, которая будет вставлена выше
+            newRow.Insert(XlInsertShiftDirection.xlShiftDown);  // Вставляем строку
 
             // Очищаем все значения в новой строке, но оставляем формулы
             try
@@ -288,6 +306,10 @@ namespace ProjectPlanExcelAddIn
             // Включаем обновление экрана и вычисления обратно
             excel.ScreenUpdating = true;
             excel.Calculation = XlCalculation.xlCalculationAutomatic;
+            MoveRowsUp(sender, e);
         }
+
+
+
     }
 }
