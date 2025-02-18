@@ -37,6 +37,7 @@ namespace ProjectPlanExcelAddIn
                 }
             }
         }
+
         public void ShiftDatesInRows(Range selectedRange)
         {
             foreach (Range row in selectedRange.Rows)

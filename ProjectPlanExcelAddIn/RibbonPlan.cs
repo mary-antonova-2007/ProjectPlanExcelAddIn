@@ -63,13 +63,11 @@ namespace ProjectPlanExcelAddIn
 
                 // Выводим всплывающее уведомление в панель состояния Excel
                 ShowMessageInStatusBar("Даты в строках выделенного диапазона успешно сдвинуты.");
-                ShowNotification("Даты в строках выделенного диапазона успешно сдвинуты.");
             }
             else
             {
                 // Если диапазон не выбран, выводим сообщение в панель состояния
                 ShowMessageInStatusBar("Пожалуйста, выделите диапазон ячеек.");
-                ShowNotification("Пожалуйста, выделите диапазон ячеек.");
             }
         }
 
@@ -83,7 +81,7 @@ namespace ProjectPlanExcelAddIn
             RowsDateShifter(1);
         }
 
-        private void RunDateShifter(object sender, RibbonControlEventArgs e)
+        private void RunDateShifterWithForm(object sender, RibbonControlEventArgs e)
         {
             // Создаем экземпляр пользовательской формы InputForm
             var inputForm = new InputForm { LabelInfo = "Введите количество дней для сдвига:" };
@@ -176,7 +174,7 @@ namespace ProjectPlanExcelAddIn
 
         private void buttonAddDays_Click(object sender, RibbonControlEventArgs e)
         {
-            RunDateShifter(sender, e);
+            RunDateShifterWithForm(sender, e);
         }
 
         private void buttonAutoPlan_Click(object sender, RibbonControlEventArgs e)
@@ -340,8 +338,6 @@ namespace ProjectPlanExcelAddIn
         private void ShowMessageInStatusBar(string message, int pauseMillisec = 3000)
         {
             ExcelApp.StatusBar = message;
-            System.Threading.Thread.Sleep(pauseMillisec); // Задержка pauseMillisec милисекунды
-            ExcelApp.StatusBar = false; // Сбрасываем панель состояния
         }
 
     }
