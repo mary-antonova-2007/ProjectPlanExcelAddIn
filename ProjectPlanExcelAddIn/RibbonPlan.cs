@@ -62,19 +62,14 @@ namespace ProjectPlanExcelAddIn
                 }
 
                 // Выводим всплывающее уведомление в панель состояния Excel
-                excelApp.StatusBar = "Даты в строках выделенного диапазона успешно сдвинуты.";
+                ShowMessageInStatusBar("Даты в строках выделенного диапазона успешно сдвинуты.");
                 ShowNotification("Даты в строках выделенного диапазона успешно сдвинуты.");
-                // Ожидаем 1.3 секунды и очищаем статус
-                System.Threading.Thread.Sleep(1300); // Задержка 1.3 секунды
-                excelApp.StatusBar = false; // Сбрасываем панель состояния
             }
             else
             {
                 // Если диапазон не выбран, выводим сообщение в панель состояния
-                excelApp.StatusBar = "Пожалуйста, выделите диапазон ячеек.";
+                ShowMessageInStatusBar("Пожалуйста, выделите диапазон ячеек.");
                 ShowNotification("Пожалуйста, выделите диапазон ячеек.");
-                System.Threading.Thread.Sleep(1300); // Задержка 1.3 секунды
-                excelApp.StatusBar = false; // Сбрасываем панель состояния
             }
         }
 
@@ -98,30 +93,29 @@ namespace ProjectPlanExcelAddIn
             {
                 if (int.TryParse(inputForm.TextBoxData, out int shiftDays))
                 {
-                    Application excelApp = Globals.ThisAddIn.Application;
-                    Range selectedRange = excelApp.Selection as Range;
+                    Range selectedRange = ExcelApp.Selection as Range;
 
                     if (selectedRange != null)
                     {
                         var dateShifter = new DateShifter(new BusinessCalendar(), shiftDays);
                         dateShifter.ShiftSelectedDates(selectedRange);
-
-                        MessageBox.Show("Даты успешно сдвинуты!", "Готово");
+                        ShowMessageInStatusBar("Даты успешно сдвинуты!");
                     }
                     else
                     {
-                        MessageBox.Show("Пожалуйста, выделите диапазон ячеек.", "Ошибка");
+                        ShowMessageInStatusBar("Пожалуйста, выделите диапазон ячеек.");
                     }
                 }
                 else
                 {
-                    MessageBox.Show("Введите корректное число для сдвига.", "Ошибка");
+                    ShowMessageInStatusBar("Введите корректное число для сдвига.");
                 }
             }
             else
             {
                 // Обработка отмены операции
-                MessageBox.Show("Операция отменена пользователем.", "Отмена");
+                ShowMessageInStatusBar("Операция отменена пользователем.");
+
             }
         }
 
@@ -341,6 +335,13 @@ namespace ProjectPlanExcelAddIn
             notifyIcon.BalloonTipText = message;
             notifyIcon.BalloonTipTitle = title;
             notifyIcon.ShowBalloonTip(1500); // Покажет уведомление на 1.5 секунды
+        }
+
+        private void ShowMessageInStatusBar(string message, int pauseMillisec = 3000)
+        {
+            ExcelApp.StatusBar = message;
+            System.Threading.Thread.Sleep(pauseMillisec); // Задержка pauseMillisec милисекунды
+            ExcelApp.StatusBar = false; // Сбрасываем панель состояния
         }
 
     }

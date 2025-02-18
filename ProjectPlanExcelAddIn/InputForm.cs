@@ -17,7 +17,6 @@ namespace ProjectPlanExcelAddIn
         public InputForm()
         {
             InitializeComponent();
-
             // Устанавливаем обработчики событий для кнопок
             buttonOk.Click += ButtonOk_Click;
             buttonCancel.Click += ButtonCancel_Click;
@@ -37,6 +36,13 @@ namespace ProjectPlanExcelAddIn
             // Закрываем форму и возвращаем DialogResult.Cancel
             DialogResult = DialogResult.Cancel;
             Close();
+        }
+        private void Form_Load(object sender, EventArgs e)
+        {
+            // Устанавливаем фокус на textBoxData и выделяем текст
+            this.ActiveControl = textBoxData;
+            textBoxData.Focus();
+            textBoxData.SelectAll();
         }
     }
 }

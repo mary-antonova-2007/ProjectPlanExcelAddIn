@@ -36,7 +36,7 @@
             // 
             // buttonOk
             // 
-            this.buttonOk.Location = new System.Drawing.Point(40, 71);
+            this.buttonOk.Location = new System.Drawing.Point(27, 74);
             this.buttonOk.Name = "buttonOk";
             this.buttonOk.Size = new System.Drawing.Size(75, 23);
             this.buttonOk.TabIndex = 0;
@@ -46,7 +46,7 @@
             // buttonCancel
             // 
             this.buttonCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.buttonCancel.Location = new System.Drawing.Point(121, 71);
+            this.buttonCancel.Location = new System.Drawing.Point(127, 74);
             this.buttonCancel.Name = "buttonCancel";
             this.buttonCancel.Size = new System.Drawing.Size(75, 23);
             this.buttonCancel.TabIndex = 1;
@@ -59,6 +59,7 @@
             this.textBoxData.Name = "textBoxData";
             this.textBoxData.Size = new System.Drawing.Size(217, 20);
             this.textBoxData.TabIndex = 2;
+            this.textBoxData.Text = "0";
             // 
             // labelInfo
             // 
@@ -75,13 +76,16 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.buttonCancel;
-            this.ClientSize = new System.Drawing.Size(241, 106);
+            this.ClientSize = new System.Drawing.Size(241, 110);
             this.Controls.Add(this.labelInfo);
             this.Controls.Add(this.textBoxData);
             this.Controls.Add(this.buttonCancel);
             this.Controls.Add(this.buttonOk);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.Name = "InputForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Данные для ввода";
+            this.Load += new System.EventHandler(this.Form_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 
