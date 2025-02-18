@@ -23,7 +23,11 @@ namespace ProjectPlanExcelAddIn
                 return Globals.ThisAddIn.GetTemplateID(Globals.ThisAddIn.Application.ActiveWorkbook);
             }
         }
-
+        Application ExcelApp {
+            get {
+                return Globals.ThisAddIn.Application;
+            }
+        }
         private void RibbonPlan_Load(object sender, RibbonUIEventArgs e)
         {
 
@@ -41,13 +45,36 @@ namespace ProjectPlanExcelAddIn
                 // Создаем экземпляр DateShifter с переданным значением для сдвига
                 var dateShifter = new DateShifter(new BusinessCalendar(), countDays);
 
-                // Сдвигаем даты в выбранных строках
-                dateShifter.ShiftDatesInRows(selectedRange);
+                // Получаем номер первой строки выделенного диапазона
+                int firstRow = selectedRange.Row;
+
+                // Получаем номер последней строки выделенного диапазона
+                int lastRow = selectedRange.Row + selectedRange.Rows.Count - 1;
+
+                // Проходим по каждой строке в выделенном диапазоне
+                for (int row = firstRow; row <= lastRow; row++)
+                {
+                    // Получаем всю строку, в которой находится выделенная ячейка
+                    Range entireRow = selectedRange.Worksheet.Rows[row];
+
+                    // Сдвигаем даты в текущей строке
+                    dateShifter.ShiftDatesInRows(entireRow);
+                }
+
+                // Выводим всплывающее уведомление в панель состояния Excel
+                excelApp.StatusBar = "Даты в строках выделенного диапазона успешно сдвинуты.";
+                ShowNotification("Даты в строках выделенного диапазона успешно сдвинуты.");
+                // Ожидаем 1.3 секунды и очищаем статус
+                System.Threading.Thread.Sleep(1300); // Задержка 1.3 секунды
+                excelApp.StatusBar = false; // Сбрасываем панель состояния
             }
             else
             {
-                // Если диапазон не выбран
-                MessageBox.Show("Пожалуйста, выделите диапазон ячеек.", "Ошибка");
+                // Если диапазон не выбран, выводим сообщение в панель состояния
+                excelApp.StatusBar = "Пожалуйста, выделите диапазон ячеек.";
+                ShowNotification("Пожалуйста, выделите диапазон ячеек.");
+                System.Threading.Thread.Sleep(1300); // Задержка 1.3 секунды
+                excelApp.StatusBar = false; // Сбрасываем панель состояния
             }
         }
 
@@ -306,7 +333,15 @@ namespace ProjectPlanExcelAddIn
             MoveRowsUp(sender, e);
         }
 
-
+        private void ShowNotification(string message, string title = "Уведомление")
+        {
+            NotifyIcon notifyIcon = new NotifyIcon();
+            notifyIcon.Icon = SystemIcons.Information;
+            notifyIcon.Visible = true;
+            notifyIcon.BalloonTipText = message;
+            notifyIcon.BalloonTipTitle = title;
+            notifyIcon.ShowBalloonTip(1500); // Покажет уведомление на 1.5 секунды
+        }
 
     }
 }
