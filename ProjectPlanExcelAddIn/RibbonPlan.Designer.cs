@@ -44,12 +44,12 @@
             this.buttonGPTQuestion = this.Factory.CreateRibbonButton();
             this.buttonGPTSettings = this.Factory.CreateRibbonButton();
             this.groupMove = this.Factory.CreateRibbonGroup();
+            this.buttonShiftDatesLeft = this.Factory.CreateRibbonButton();
+            this.buttonShiftDatesRight = this.Factory.CreateRibbonButton();
+            this.separator1 = this.Factory.CreateRibbonSeparator();
             this.buttonMoveRowUp = this.Factory.CreateRibbonButton();
             this.buttonMoveRowDown = this.Factory.CreateRibbonButton();
             this.buttonAddRowAbove = this.Factory.CreateRibbonButton();
-            this.buttonShiftDatesRight = this.Factory.CreateRibbonButton();
-            this.buttonShiftDatesLeft = this.Factory.CreateRibbonButton();
-            this.separator1 = this.Factory.CreateRibbonSeparator();
             this.tabPlan.SuspendLayout();
             this.groupDates.SuspendLayout();
             this.groupPlan.SuspendLayout();
@@ -121,6 +121,24 @@
             this.groupMove.Label = "Перемещение строк";
             this.groupMove.Name = "groupMove";
             // 
+            // buttonShiftDatesLeft
+            // 
+            this.buttonShiftDatesLeft.KeyTip = "A1";
+            this.buttonShiftDatesLeft.Label = "Сдвинуть -1 день";
+            this.buttonShiftDatesLeft.Name = "buttonShiftDatesLeft";
+            this.buttonShiftDatesLeft.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.ShiftDatesLeft);
+            // 
+            // buttonShiftDatesRight
+            // 
+            this.buttonShiftDatesRight.KeyTip = "D1";
+            this.buttonShiftDatesRight.Label = "Сдвинуть +1 день";
+            this.buttonShiftDatesRight.Name = "buttonShiftDatesRight";
+            this.buttonShiftDatesRight.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.ShiftDatesRight);
+            // 
+            // separator1
+            // 
+            this.separator1.Name = "separator1";
+            // 
             // buttonMoveRowUp
             // 
             this.buttonMoveRowUp.KeyTip = "W1";
@@ -141,24 +159,6 @@
             this.buttonAddRowAbove.Label = "Добавить строку выше";
             this.buttonAddRowAbove.Name = "buttonAddRowAbove";
             this.buttonAddRowAbove.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.InsertRowAbove);
-            // 
-            // buttonShiftDatesRight
-            // 
-            this.buttonShiftDatesRight.KeyTip = "D1";
-            this.buttonShiftDatesRight.Label = "Сдвинуть +1 день";
-            this.buttonShiftDatesRight.Name = "buttonShiftDatesRight";
-            this.buttonShiftDatesRight.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.ShiftDatesRight);
-            // 
-            // buttonShiftDatesLeft
-            // 
-            this.buttonShiftDatesLeft.KeyTip = "A1";
-            this.buttonShiftDatesLeft.Label = "Сдвинуть -1 день";
-            this.buttonShiftDatesLeft.Name = "buttonShiftDatesLeft";
-            this.buttonShiftDatesLeft.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.ShiftDatesLeft);
-            // 
-            // separator1
-            // 
-            this.separator1.Name = "separator1";
             // 
             // RibbonPlan
             // 

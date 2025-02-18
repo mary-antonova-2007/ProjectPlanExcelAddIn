@@ -43,9 +43,6 @@ namespace ProjectPlanExcelAddIn
 
                 // Сдвигаем даты в выбранных строках
                 dateShifter.ShiftDatesInRows(selectedRange);
-
-                // Сообщение об успешном завершении
-                MessageBox.Show("Даты успешно сдвинуты!", "Готово");
             }
             else
             {
