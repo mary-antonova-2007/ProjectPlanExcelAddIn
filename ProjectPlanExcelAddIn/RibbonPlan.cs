@@ -11,6 +11,8 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Application = Microsoft.Office.Interop.Excel.Application;
+using System.Globalization;
+using System.Linq;
 
 namespace ProjectPlanExcelAddIn
 {
@@ -340,5 +342,210 @@ namespace ProjectPlanExcelAddIn
             ExcelApp.StatusBar = message;
         }
 
+        private void buttonProductTimeReport_Click(object sender, RibbonControlEventArgs e)
+        {
+            var app = Globals.ThisAddIn.Application;
+            var files = PromptUserToSelectFiles();
+            if (files == null || files.Length == 0) return;
+
+            var taskData = new Dictionary<string, Dictionary<string, double>>(StringComparer.OrdinalIgnoreCase);
+            var columnMeta = new SortedSet<(int year, int month, string user, string title)>();
+
+            foreach (string file in files)
+            {
+                ProcessFile(file, app, taskData, columnMeta);
+            }
+
+            GenerateReportSheet(app, taskData, columnMeta);
+            MessageBox.Show("Сводный отчет успешно создан!", "Готово", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+        private string[] PromptUserToSelectFiles()
+        {
+            using (var dialog = new OpenFileDialog
+            {
+                Title = "Выберите Excel-файлы",
+                Multiselect = true,
+                Filter = "Excel файлы (*.xlsx)|*.xlsx"
+            })
+            {
+                return dialog.ShowDialog() == DialogResult.OK ? dialog.FileNames : null;
+            }
+        }
+        private string[] PromptUserToSelectFolderAndGetFiles()
+        {
+            using (var dialog = new FolderBrowserDialog
+            {
+                Description = "Выберите папку с Excel-файлами"
+            })
+            {
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    string folder = dialog.SelectedPath;
+                    var files = Directory.GetFiles(folder, "*.xlsx", SearchOption.AllDirectories);
+                    return files;
+                }
+            }
+            return null;
+        }
+        private void buttonCreateReport_Click(object sender, RibbonControlEventArgs e)
+        {
+            var app = Globals.ThisAddIn.Application;
+            var files = PromptUserToSelectFolderAndGetFiles();
+            if (files == null || files.Length == 0)
+            {
+                MessageBox.Show("Файлы не найдены.", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            var taskData = new Dictionary<string, Dictionary<string, double>>(StringComparer.OrdinalIgnoreCase);
+            var columnMeta = new SortedSet<(int year, int month, string user, string title)>();
+
+            foreach (string file in files)
+            {
+                if (!file.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase)) continue;
+                ProcessFile(file, app, taskData, columnMeta);
+            }
+
+            GenerateReportSheet(app, taskData, columnMeta);
+            MessageBox.Show("Сводный отчет успешно создан!", "Готово", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+        private string SanitizeSheetName(string name)
+        {
+            var invalid = Path.GetInvalidFileNameChars().Concat(new[] { '[', ']', '*', '?', '/', '\\' });
+            foreach (var c in invalid)
+                name = name.Replace(c, '_');
+            return name.Length > 31 ? name.Substring(0, 31) : name;
+        }
+        private void GenerateReportSheet(Application app, Dictionary<string, Dictionary<string, double>> taskData, SortedSet<(int year, int month, string user, string title)> columnMeta)
+        {
+            var groupedByUser = columnMeta.GroupBy(x => x.user);
+
+            foreach (var userGroup in groupedByUser)
+            {
+                string user = userGroup.Key;
+
+                var ws = app.ActiveWorkbook.Sheets.Add();
+                ws.Name = SanitizeSheetName(user);
+
+                // Сформируем мапу: ключ = $"{year}_{month}", значение = индекс столбца
+                var monthKeys = userGroup
+                    .OrderBy(x => x.year).ThenBy(x => x.month)
+                    .Select((entry, index) => new
+                    {
+                        Key = $"{entry.year:D4}_{entry.month:D2}",
+                        Title = $"{GetMonthName(entry.month)} {entry.year}",
+                        Column = index + 2 // +1 — задача, +1 — Excel 1-based
+                    }).ToList();
+
+                var colMap = monthKeys.ToDictionary(x => x.Key, x => x.Column);
+                int totalCol = colMap.Values.Max() + 1;
+
+                // Заголовки
+                ws.Cells[1, 1].Value = "Задача";
+                foreach (var mk in monthKeys)
+                {
+                    ws.Cells[1, mk.Column].Value = mk.Title;
+                }
+                ws.Cells[1, totalCol].Value = "Итого";
+
+                // Данные
+                int row = 2;
+                foreach (var task in taskData.Keys)
+                {
+                    double total = 0;
+                    var valuesByMonth = new Dictionary<int, double>();
+
+                    // Сначала собираем значения по каждому месяцу
+                    foreach (var mk in monthKeys)
+                    {
+                        string fullKey = $"{mk.Key}_{user}";
+                        if (taskData[task].TryGetValue(fullKey, out double hours))
+                        {
+                            valuesByMonth[mk.Column] = hours;
+                            total += hours;
+                        }
+                    }
+
+                    // Если у пользователя 0 часов по этой задаче — пропускаем
+                    if (total == 0) continue;
+
+                    ws.Cells[row, 1].Value = task;
+
+                    foreach (var kvp in valuesByMonth)
+                    {
+                        ws.Cells[row, kvp.Key].Value = kvp.Value;
+                    }
+
+                    ws.Cells[row, totalCol].Value = total;
+                    row++;
+                }
+
+                ws.Columns.AutoFit();
+            }
+        }
+        private string GetNamedValue(Workbook wb, string name)
+        {
+            try
+            {
+                var range = wb.Names.Item(name)?.RefersToRange;
+                var val = range?.Value;
+                if (val is object[,] arr)
+                    return arr[1, 1]?.ToString();
+                return val?.ToString();
+            }
+            catch
+            {
+                return "";
+            }
+        }
+        private string GetMonthName(int month)
+        {
+            return System.Globalization.CultureInfo
+                .GetCultureInfo("ru-RU")
+                .DateTimeFormat.GetMonthName(month);
+        }
+        private void ProcessFile(string filePath, Application app, Dictionary<string, Dictionary<string, double>> taskData, SortedSet<(int, int, string, string)> columnMeta)
+        {
+            var wb = app.Workbooks.Open(filePath, ReadOnly: true);
+            try
+            {
+                string user = GetNamedValue(wb, "UserName");
+                int year = int.Parse(GetNamedValue(wb, "Year"));
+                string monthStr = (GetNamedValue(wb, "Month"));
+                int month = DateTime.ParseExact(monthStr, "MMMM", new CultureInfo("ru-RU")).Month;
+                string title = $"{GetMonthName(month)} {year} ({user})";
+                string userKey = $"{year:D4}_{month:D2}_{user}";
+
+                columnMeta.Add((year, month, user, title));
+
+                var range = wb.Names.Item("ProductsTime")?.RefersToRange;
+                if (range == null) return;
+
+                for (int r = 1; r <= range.Rows.Count; r++)
+                {
+                    string task = Convert.ToString(range.Cells[r, 1].Value);
+                    if (string.IsNullOrWhiteSpace(task)) continue;
+
+                    if (!double.TryParse(Convert.ToString(range.Cells[r, 2].Value), out double hours)) continue;
+
+                    if (!taskData.ContainsKey(task))
+                        taskData[task] = new Dictionary<string, double>();
+
+                    if (taskData[task].ContainsKey(userKey))
+                        taskData[task][userKey] += hours;
+                    else
+                        taskData[task][userKey] = hours;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ошибка при обработке файла {filePath}:\n{ex.Message}");
+            }
+            finally
+            {
+                wb.Close(false);
+            }
+        }
     }
+
 }

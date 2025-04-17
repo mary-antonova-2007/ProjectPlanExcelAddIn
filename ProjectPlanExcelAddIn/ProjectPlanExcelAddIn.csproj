@@ -246,9 +246,7 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="RibbonPlan.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="RibbonPlan.cs" />
     <Compile Include="RibbonPlan.Designer.cs">
       <DependentUpon>RibbonPlan.cs</DependentUpon>
     </Compile>
