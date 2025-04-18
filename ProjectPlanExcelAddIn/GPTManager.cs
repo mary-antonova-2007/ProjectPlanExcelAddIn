@@ -43,59 +43,50 @@ public class GPTManager
     public async Task<string> GetResponseAsync(string prompt, string range)
     {
         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
         if (string.IsNullOrEmpty(ApiKey) || string.IsNullOrEmpty(Model))
-        {
             throw new InvalidOperationException("API key or model is not configured.");
-        }
 
-        using (var client = new HttpClient())
+        try
         {
-            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {ApiKey}");
-
-            int promptTokens = CountTokens(prompt);
-            int maxResponseTokens = 4096 - promptTokens; // Общее количество токенов для модели минус токены запроса
-
-            var requestBody = new
+            using (var client = new HttpClient())
             {
-                model = Model,
-                messages = new[]
-            {
-                new {
-                    role = "system",
-                    content = content
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", ApiKey);
+
+                int promptTokens = CountTokens(prompt);
+                int maxResponseTokens = 4096 - promptTokens;
+
+                var requestBody = new
+                {
+                    model = Model,
+                    messages = new[]
+                    {
+                    new { role = "system", content = content },
+                    new { role = "user", content = prompt },
+                    new { role = "user", content = $"Выбранный диапазон ячеек: {range}" }
                 },
-                new { role = "user", content = prompt },
-                new { role = "user", content = $"Выбранный диапазон ячеек: {range}" }
-            },
-                max_tokens = maxResponseTokens,
-                temperature = 0.7
-            };
+                    max_tokens = maxResponseTokens,
+                    temperature = 0.7
+                };
 
-            var jsonBody = JsonConvert.SerializeObject(requestBody);
-            var data = Encoding.UTF8.GetBytes(jsonBody);
+                string json = JsonConvert.SerializeObject(requestBody);
+                var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var request = (HttpWebRequest)WebRequest.Create("https://api.openai.com/v1/chat/completions");
-            request.Method = "POST";
-            request.ContentType = "application/json";
-            request.ContentLength = data.Length;
-            request.Headers.Add("Authorization", $"Bearer {ApiKey}");
+                var response = await client.PostAsync("https://api.openai.com/v1/chat/completions", httpContent);
+                string responseText = await response.Content.ReadAsStringAsync();
 
+                if (!response.IsSuccessStatusCode)
+                {
+                    return $"Ошибка: {response.StatusCode}\n{responseText}";
+                }
 
-            // Запись данных в поток запроса
-            using (var stream = await request.GetRequestStreamAsync())
-            {
-                stream.Write(data, 0, data.Length);
-            }
-            // Получение ответа
-            using (var response = await request.GetResponseAsync())
-            using (var responseStream = response.GetResponseStream())
-            using (var reader = new StreamReader(responseStream))
-            {
-                var responseText = await reader.ReadToEndAsync();
                 dynamic result = JsonConvert.DeserializeObject(responseText);
-                string responseContent = result.choices[0].message.content;
-                return responseContent;
+                return result.choices[0].message.content;
             }
+        }
+        catch (Exception ex)
+        {
+            return $"Ошибка: {ex.Message}";
         }
     }
     public void ExecuteCommands(string responseContent)

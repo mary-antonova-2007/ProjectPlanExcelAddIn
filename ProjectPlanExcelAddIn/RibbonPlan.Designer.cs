@@ -50,6 +50,9 @@
             this.group1 = this.Factory.CreateRibbonGroup();
             this.buttonProductTimeReport = this.Factory.CreateRibbonButton();
             this.button1 = this.Factory.CreateRibbonButton();
+            this.buttonUpdateProjectsProductsList = this.Factory.CreateRibbonButton();
+            this.button2 = this.Factory.CreateRibbonButton();
+            this.buttonClearAndLoadFromBook = this.Factory.CreateRibbonButton();
             this.tabPlan.SuspendLayout();
             this.groupDates.SuspendLayout();
             this.groupPlan.SuspendLayout();
@@ -145,6 +148,9 @@
             // 
             this.group1.Items.Add(this.buttonProductTimeReport);
             this.group1.Items.Add(this.button1);
+            this.group1.Items.Add(this.buttonUpdateProjectsProductsList);
+            this.group1.Items.Add(this.button2);
+            this.group1.Items.Add(this.buttonClearAndLoadFromBook);
             this.group1.KeyTip = "W";
             this.group1.Label = "Отчёты";
             this.group1.Name = "group1";
@@ -162,6 +168,24 @@
             this.button1.Label = "Отчет по изделиям (папка подпапки)";
             this.button1.Name = "button1";
             this.button1.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonCreateReport_Click);
+            // 
+            // buttonUpdateProjectsProductsList
+            // 
+            this.buttonUpdateProjectsProductsList.Label = "Загрузить новые изделия и проекты";
+            this.buttonUpdateProjectsProductsList.Name = "buttonUpdateProjectsProductsList";
+            this.buttonUpdateProjectsProductsList.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonUpdateProjectsProductsList_Click);
+            // 
+            // button2
+            // 
+            this.button2.Label = "Сохранить проекты изделия в книгу";
+            this.button2.Name = "button2";
+            this.button2.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button2_Click);
+            // 
+            // buttonClearAndLoadFromBook
+            // 
+            this.buttonClearAndLoadFromBook.Label = "Загрузить данные проектов из книги и очистить старые";
+            this.buttonClearAndLoadFromBook.Name = "buttonClearAndLoadFromBook";
+            this.buttonClearAndLoadFromBook.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonClearAndLoadFromBook_Click);
             // 
             // RibbonPlan
             // 
@@ -202,6 +226,9 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonGroup group1;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonProductTimeReport;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton button1;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonUpdateProjectsProductsList;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton button2;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonClearAndLoadFromBook;
     }
 
     partial class ThisRibbonCollection

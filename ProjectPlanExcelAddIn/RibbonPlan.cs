@@ -13,6 +13,7 @@ using System.Windows.Forms;
 using Application = Microsoft.Office.Interop.Excel.Application;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 
 namespace ProjectPlanExcelAddIn
 {
@@ -30,9 +31,16 @@ namespace ProjectPlanExcelAddIn
                 return Globals.ThisAddIn.Application;
             }
         }
+        string folderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ProjectPlan", "Data");
+        ProjectProductStorage ProjectProductStorage { get
+            {
+                return Globals.ThisAddIn._storage;
+            }
+        }
+
         private void RibbonPlan_Load(object sender, RibbonUIEventArgs e)
         {
-
+            
         }
 
         private void RowsDateShifter(int countDays)
@@ -359,6 +367,7 @@ namespace ProjectPlanExcelAddIn
             GenerateReportSheet(app, taskData, columnMeta);
             MessageBox.Show("Сводный отчет успешно создан!", "Готово", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
+
         private string[] PromptUserToSelectFiles()
         {
             using (var dialog = new OpenFileDialog
@@ -371,6 +380,7 @@ namespace ProjectPlanExcelAddIn
                 return dialog.ShowDialog() == DialogResult.OK ? dialog.FileNames : null;
             }
         }
+
         private string[] PromptUserToSelectFolderAndGetFiles()
         {
             using (var dialog = new FolderBrowserDialog
@@ -387,6 +397,7 @@ namespace ProjectPlanExcelAddIn
             }
             return null;
         }
+
         private void buttonCreateReport_Click(object sender, RibbonControlEventArgs e)
         {
             var app = Globals.ThisAddIn.Application;
@@ -409,6 +420,7 @@ namespace ProjectPlanExcelAddIn
             GenerateReportSheet(app, taskData, columnMeta);
             MessageBox.Show("Сводный отчет успешно создан!", "Готово", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
+
         private string SanitizeSheetName(string name)
         {
             var invalid = Path.GetInvalidFileNameChars().Concat(new[] { '[', ']', '*', '?', '/', '\\' });
@@ -416,6 +428,7 @@ namespace ProjectPlanExcelAddIn
                 name = name.Replace(c, '_');
             return name.Length > 31 ? name.Substring(0, 31) : name;
         }
+
         private void GenerateReportSheet(Application app, Dictionary<string, Dictionary<string, double>> taskData, SortedSet<(int year, int month, string user, string title)> columnMeta)
         {
             var groupedByUser = columnMeta.GroupBy(x => x.user);
@@ -483,6 +496,7 @@ namespace ProjectPlanExcelAddIn
                 ws.Columns.AutoFit();
             }
         }
+
         private string GetNamedValue(Workbook wb, string name)
         {
             try
@@ -498,12 +512,14 @@ namespace ProjectPlanExcelAddIn
                 return "";
             }
         }
+
         private string GetMonthName(int month)
         {
             return System.Globalization.CultureInfo
                 .GetCultureInfo("ru-RU")
                 .DateTimeFormat.GetMonthName(month);
         }
+
         private void ProcessFile(string filePath, Application app, Dictionary<string, Dictionary<string, double>> taskData, SortedSet<(int, int, string, string)> columnMeta)
         {
             var wb = app.Workbooks.Open(filePath, ReadOnly: true);
@@ -545,6 +561,230 @@ namespace ProjectPlanExcelAddIn
             {
                 wb.Close(false);
             }
+        }
+
+        public void LoadProjectsAndProductsFromWorkbook()
+        {
+            var storage = ProjectProductStorage;
+            Workbook workbook = Globals.ThisAddIn.Application.ActiveWorkbook;
+            Name namedRange = null;
+
+            try
+            {
+                namedRange = workbook.Names.Item("ProjectsAndProducts");
+            }
+            catch
+            {
+                MessageBox.Show("Именованный диапазон 'ProjectsAndProducts' не найден.");
+                return;
+            }
+
+            Range range = namedRange.RefersToRange;
+            int rowCount = range.Rows.Count;
+
+            // Подсчёт новых проектов и изделий
+            Dictionary<string, HashSet<string>> addedProjects = new Dictionary<string, HashSet<string>>();
+
+            for (int i = 1; i <= rowCount; i++)
+            {
+                string projectName = Convert.ToString((range.Cells[i, 1] as Range)?.Value2)?.Trim();
+                string productName = Convert.ToString((range.Cells[i, 2] as Range)?.Value2)?.Trim();
+
+                if (string.IsNullOrEmpty(projectName) || string.IsNullOrEmpty(productName))
+                    continue;
+
+                if (!storage.ProjectsProducts.ContainsKey(projectName))
+                {
+                    storage.ProjectsProducts[projectName] = new List<string> { productName };
+                    addedProjects[projectName] = new HashSet<string> { productName };
+                }
+                else
+                {
+                    if (!storage.ProjectsProducts[projectName].Contains(productName))
+                    {
+                        storage.ProjectsProducts[projectName].Add(productName);
+
+                        if (!addedProjects.ContainsKey(projectName))
+                            addedProjects[projectName] = new HashSet<string>();
+
+                        addedProjects[projectName].Add(productName);
+                    }
+                }
+            }
+
+            storage.SaveToFile();
+
+            // Формирование отчета
+            if (addedProjects.Count == 0)
+            {
+                MessageBox.Show("Новые данные не были добавлены.");
+                return;
+            }
+
+            StringBuilder report = new StringBuilder();
+            report.AppendLine($"Успешно добавлено {addedProjects.Count} проект(ов):");
+
+            int index = 1;
+            foreach (var kvp in addedProjects.OrderBy(p => p.Key))
+            {
+                report.AppendLine($"{index}. {kvp.Key} - {kvp.Value.Count} изд.");
+                index++;
+            }
+
+            int totalProjects = storage.ProjectsProducts.Count;
+            int totalProducts = storage.ProjectsProducts.Sum(p => p.Value.Count);
+
+            report.AppendLine();
+            report.AppendLine($"Всего проектов: {totalProjects}, всего изделий: {totalProducts}");
+
+            MessageBox.Show(report.ToString(), "Обновление справочника", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        public void UpdateWorkbookFromStorage()
+        {
+            var storage = ProjectProductStorage;
+            Workbook workbook = Globals.ThisAddIn.Application.ActiveWorkbook;
+            Name namedRange = null;
+
+            try
+            {
+                namedRange = workbook.Names.Item("ProjectsAndProducts");
+            }
+            catch
+            {
+                MessageBox.Show("Именованный диапазон 'ProjectsAndProducts' не найден.");
+                return;
+            }
+
+            Range range = namedRange.RefersToRange;
+            Worksheet sheet = range.Worksheet;
+
+            // Список пар (проект, изделие)
+            var rows = new List<(string Project, string Product)>();
+            foreach (var kvp in storage.ProjectsProducts)
+            {
+                string project = kvp.Key;
+                foreach (string product in kvp.Value)
+                {
+                    rows.Add((project, product));
+                }
+            }
+
+            // Естественная сортировка
+            rows = rows
+                .OrderBy(r => r.Project, new NaturalStringComparer())
+                .ThenBy(r => r.Product, new NaturalStringComparer())
+                .ToList();
+
+            int existingRows = range.Rows.Count;
+            int requiredRows = rows.Count;
+            int startRow = range.Row;
+            int startColumn = range.Column;
+
+            if (requiredRows > existingRows)
+            {
+                int newLastRow = startRow + requiredRows - 1;
+                Range newRange = sheet.Range[
+                    sheet.Cells[startRow, startColumn],
+                    sheet.Cells[newLastRow, startColumn + 1]
+                ];
+
+                namedRange.RefersTo = $"='{sheet.Name}'!{newRange.Address[ReferenceStyle: XlReferenceStyle.xlA1]}";
+                range = newRange;
+            }
+
+            range.ClearContents();
+
+            for (int i = 0; i < rows.Count; i++)
+            {
+                (range.Cells[i + 1, 1] as Range).Value2 = rows[i].Project;
+                (range.Cells[i + 1, 2] as Range).Value2 = rows[i].Product;
+            }
+
+            try
+            {
+                foreach (WorkbookConnection connection in workbook.Connections)
+                {
+                    connection.Refresh();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ошибка при обновлении подключений Power Query: " + ex.Message);
+            }
+        }
+
+
+
+        private void buttonUpdateProjectsProductsList_Click(object sender, RibbonControlEventArgs e)
+        {
+            LoadProjectsAndProductsFromWorkbook();
+        }
+
+        public void ReloadStorageFromWorkbookWithConfirmation()
+        {
+            DialogResult result = MessageBox.Show(
+                "Вы хотите удалить старые записи и добавить записи только из этой книги?",
+                "Обновление данных",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question
+            );
+
+            if (result != DialogResult.Yes)
+                return;
+
+            var storage = ProjectProductStorage;
+            Workbook workbook = Globals.ThisAddIn.Application.ActiveWorkbook;
+            Name namedRange = null;
+
+            try
+            {
+                namedRange = workbook.Names.Item("ProjectsAndProducts");
+            }
+            catch
+            {
+                MessageBox.Show("Именованный диапазон 'ProjectsAndProducts' не найден.");
+                return;
+            }
+
+            Range range = namedRange.RefersToRange;
+            int rowCount = range.Rows.Count;
+
+            // Очищаем старые записи
+            storage.ProjectsProducts.Clear();
+
+            // Загружаем новые из книги
+            for (int i = 1; i <= rowCount; i++)
+            {
+                string projectName = Convert.ToString((range.Cells[i, 1] as Range)?.Value2)?.Trim();
+                string productName = Convert.ToString((range.Cells[i, 2] as Range)?.Value2)?.Trim();
+
+                if (string.IsNullOrEmpty(projectName) || string.IsNullOrEmpty(productName))
+                    continue;
+
+                if (!storage.ProjectsProducts.ContainsKey(projectName))
+                {
+                    storage.ProjectsProducts[projectName] = new List<string> { productName };
+                }
+                else if (!storage.ProjectsProducts[projectName].Contains(productName))
+                {
+                    storage.ProjectsProducts[projectName].Add(productName);
+                }
+            }
+
+            storage.SaveToFile();
+            MessageBox.Show("Данные успешно обновлены из книги.", "Готово", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+
+        private void button2_Click(object sender, RibbonControlEventArgs e)
+        {
+            UpdateWorkbookFromStorage();
+        }
+
+        private void buttonClearAndLoadFromBook_Click(object sender, RibbonControlEventArgs e)
+        {
+            ReloadStorageFromWorkbookWithConfirmation();
         }
     }
 

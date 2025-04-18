@@ -215,6 +215,8 @@
     <Compile Include="InputForm.Designer.cs">
       <DependentUpon>InputForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="NaturalStringComparer.cs" />
+    <Compile Include="ProjectProductStorage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -246,7 +248,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="RibbonPlan.cs" />
+    <Compile Include="RibbonPlan.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="RibbonPlan.Designer.cs">
       <DependentUpon>RibbonPlan.cs</DependentUpon>
     </Compile>

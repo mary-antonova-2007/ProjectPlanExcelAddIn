@@ -9,16 +9,20 @@ namespace ProjectPlanExcelAddIn
     public partial class ThisAddIn
     {
         public GPTManager GPTManager { get; set; }
+        public ProjectProductStorage _storage;
 
         private void ThisAddIn_Startup(object sender, System.EventArgs e)
         {
             this.Application.WorkbookActivate += new AppEvents_WorkbookActivateEventHandler(Application_WorkbookOpen);
             GPTManager = new GPTManager();
+
+            _storage = new ProjectProductStorage();
         }
 
         private void ThisAddIn_Shutdown(object sender, System.EventArgs e)
         {
             this.Application.WorkbookOpen -= new AppEvents_WorkbookOpenEventHandler(Application_WorkbookOpen);
+            _storage.SaveToFile();
         }
 
         private void Application_WorkbookOpen(Workbook workbook)
