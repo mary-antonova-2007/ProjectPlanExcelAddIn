@@ -158,33 +158,40 @@
             // buttonProductTimeReport
             // 
             this.buttonProductTimeReport.KeyTip = "W1";
-            this.buttonProductTimeReport.Label = "Отчет по изделиям (файлы)";
+            this.buttonProductTimeReport.Label = "Отчет часы по изделиям (файлы)";
             this.buttonProductTimeReport.Name = "buttonProductTimeReport";
+            this.buttonProductTimeReport.SuperTip = "Выводит отчет по выбраным файлам";
             this.buttonProductTimeReport.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonProductTimeReport_Click);
             // 
             // button1
             // 
             this.button1.KeyTip = "W1";
-            this.button1.Label = "Отчет по изделиям (папка подпапки)";
+            this.button1.Label = "Отчет часы по изделиям (папка подпапки)";
             this.button1.Name = "button1";
+            this.button1.SuperTip = "Выводит отчёт по всем табелям в формате xlsx из указанной папки, включая подпапки" +
+    ".";
             this.button1.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonCreateReport_Click);
             // 
             // buttonUpdateProjectsProductsList
             // 
-            this.buttonUpdateProjectsProductsList.Label = "Загрузить новые изделия и проекты";
+            this.buttonUpdateProjectsProductsList.Label = "Обновить список изделий из книги";
             this.buttonUpdateProjectsProductsList.Name = "buttonUpdateProjectsProductsList";
+            this.buttonUpdateProjectsProductsList.SuperTip = "Загружает данные о проектах и изделиях из листа Проекты и Изделия в память надстр" +
+    "ойки (имя диапазона ProjectsAndProducts)";
             this.buttonUpdateProjectsProductsList.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonUpdateProjectsProductsList_Click);
             // 
             // button2
             // 
-            this.button2.Label = "Сохранить проекты изделия в книгу";
+            this.button2.Label = "Записать список изделий в книгу";
             this.button2.Name = "button2";
+            this.button2.SuperTip = "Очищает список изделий в книге и записывает туда изделия из памяти надстройки.";
             this.button2.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.button2_Click);
             // 
             // buttonClearAndLoadFromBook
             // 
-            this.buttonClearAndLoadFromBook.Label = "Загрузить данные проектов из книги и очистить старые";
+            this.buttonClearAndLoadFromBook.Label = "Загрузить список изделий из книги";
             this.buttonClearAndLoadFromBook.Name = "buttonClearAndLoadFromBook";
+            this.buttonClearAndLoadFromBook.SuperTip = "Полностью удаляет список изделий из надстройки и обновляет его из текущей книги";
             this.buttonClearAndLoadFromBook.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonClearAndLoadFromBook_Click);
             // 
             // RibbonPlan
