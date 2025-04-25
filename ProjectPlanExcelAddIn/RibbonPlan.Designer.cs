@@ -53,6 +53,7 @@
             this.buttonUpdateProjectsProductsList = this.Factory.CreateRibbonButton();
             this.button2 = this.Factory.CreateRibbonButton();
             this.buttonClearAndLoadFromBook = this.Factory.CreateRibbonButton();
+            this.buttonShowCalendar = this.Factory.CreateRibbonButton();
             this.tabPlan.SuspendLayout();
             this.groupDates.SuspendLayout();
             this.groupPlan.SuspendLayout();
@@ -74,6 +75,7 @@
             // groupDates
             // 
             this.groupDates.Items.Add(this.buttonAddDays);
+            this.groupDates.Items.Add(this.buttonShowCalendar);
             this.groupDates.Label = "Даты";
             this.groupDates.Name = "groupDates";
             // 
@@ -194,6 +196,13 @@
             this.buttonClearAndLoadFromBook.SuperTip = "Полностью удаляет список изделий из надстройки и обновляет его из текущей книги";
             this.buttonClearAndLoadFromBook.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonClearAndLoadFromBook_Click);
             // 
+            // buttonShowCalendar
+            // 
+            this.buttonShowCalendar.Label = "Календарь";
+            this.buttonShowCalendar.Name = "buttonShowCalendar";
+            this.buttonShowCalendar.ShowImage = true;
+            this.buttonShowCalendar.Click += new Microsoft.Office.Tools.Ribbon.RibbonControlEventHandler(this.buttonShowCalendar_Click);
+            // 
             // RibbonPlan
             // 
             this.Name = "RibbonPlan";
@@ -236,6 +245,7 @@
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonUpdateProjectsProductsList;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton button2;
         internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonClearAndLoadFromBook;
+        internal Microsoft.Office.Tools.Ribbon.RibbonButton buttonShowCalendar;
     }
 
     partial class ThisRibbonCollection

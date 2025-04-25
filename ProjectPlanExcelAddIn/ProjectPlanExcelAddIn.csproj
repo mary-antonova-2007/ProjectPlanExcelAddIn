@@ -215,6 +215,12 @@
     <Compile Include="InputForm.Designer.cs">
       <DependentUpon>InputForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="MultiMonthCalendarForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MultiMonthCalendarForm.Designer.cs">
+      <DependentUpon>MultiMonthCalendarForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="NaturalStringComparer.cs" />
     <Compile Include="ProjectProductStorage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">

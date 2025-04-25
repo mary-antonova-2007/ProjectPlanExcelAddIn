@@ -786,6 +786,51 @@ namespace ProjectPlanExcelAddIn
         {
             ReloadStorageFromWorkbookWithConfirmation();
         }
+
+        private void buttonShowCalendar_Click(object sender, RibbonControlEventArgs e)
+        {
+            var excelApp = Globals.ThisAddIn.Application;
+            Range activeCell = excelApp.ActiveCell;
+
+            DateTime selectedDate = DateTime.Today;
+
+            if (activeCell != null && activeCell.Value2 != null)
+            {
+                try
+                {
+                    // Попробуем привести к DateTime, если значение ячейки подходит
+                    if (activeCell.Value2 is double)
+                    {
+                        selectedDate = DateTime.FromOADate((double)activeCell.Value2);
+                    }
+                    else if (DateTime.TryParse(activeCell.Value2.ToString(), out DateTime parsedDate))
+                    {
+                        selectedDate = parsedDate;
+                    }
+                }
+                catch
+                {
+                    // В случае ошибки оставляем DateTime.Today
+                    selectedDate = DateTime.Today;
+                }
+            }
+
+            // Убираем время, оставляем только дату
+            selectedDate = selectedDate.Date;
+
+            // Показываем форму с календарями
+            var calendarForm = new MultiMonthCalendarForm(selectedDate);
+            calendarForm.Show();
+
+            // Когда форма закрывается, вставляем дату в ячейку
+            calendarForm.FormClosed += (s, args) =>
+            {
+                if (activeCell != null)
+                {
+                    activeCell.Value = selectedDate; // Устанавливаем только дату
+                }
+            };
+        }
     }
 
 }
