@@ -820,7 +820,13 @@ namespace ProjectPlanExcelAddIn
 
             if (result == DialogResult.OK && calendarForm.SelectedDate.HasValue && activeCell != null)
             {
-                activeCell.Value = calendarForm.SelectedDate.Value.ToString("dd.MM.yyyy");
+                var onlyDate = calendarForm.SelectedDate.Value.Date;
+
+                activeCell.NumberFormat = "dd.mm.yyyy"; // Устанавливаем формат ячейки как дата
+                activeCell.Value = onlyDate;
+
+                // Принудительно пересчитываем лист
+                activeCell.Worksheet.Calculate();
             }
         }
     }
