@@ -790,7 +790,7 @@ namespace ProjectPlanExcelAddIn
         private void buttonShowCalendar_Click(object sender, RibbonControlEventArgs e)
         {
             var excelApp = Globals.ThisAddIn.Application;
-            Range activeCell = excelApp.ActiveCell;
+            var activeCell = excelApp.ActiveCell as Range;
 
             DateTime selectedDate = DateTime.Today;
 
@@ -798,7 +798,6 @@ namespace ProjectPlanExcelAddIn
             {
                 try
                 {
-                    // Попробуем привести к DateTime, если значение ячейки подходит
                     if (activeCell.Value2 is double)
                     {
                         selectedDate = DateTime.FromOADate((double)activeCell.Value2);
@@ -810,26 +809,19 @@ namespace ProjectPlanExcelAddIn
                 }
                 catch
                 {
-                    // В случае ошибки оставляем DateTime.Today
                     selectedDate = DateTime.Today;
                 }
             }
 
-            // Убираем время, оставляем только дату
             selectedDate = selectedDate.Date;
 
-            // Показываем форму с календарями
             var calendarForm = new MultiMonthCalendarForm(selectedDate);
-            calendarForm.Show();
+            var result = calendarForm.ShowDialog(); // модальное окно
 
-            // Когда форма закрывается, вставляем дату в ячейку
-            calendarForm.FormClosed += (s, args) =>
+            if (result == DialogResult.OK && calendarForm.SelectedDate.HasValue && activeCell != null)
             {
-                if (activeCell != null)
-                {
-                    activeCell.Value = selectedDate; // Устанавливаем только дату
-                }
-            };
+                activeCell.Value = calendarForm.SelectedDate.Value.ToString("dd.MM.yyyy");
+            }
         }
     }
 

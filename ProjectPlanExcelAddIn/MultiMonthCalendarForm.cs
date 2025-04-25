@@ -15,6 +15,7 @@ namespace ProjectPlanExcelAddIn
     public partial class MultiMonthCalendarForm : Form
     {
         private DateTime _baseDate;
+        public DateTime? SelectedDate { get; private set; }
 
         public MultiMonthCalendarForm(DateTime startDate)
         {
@@ -26,6 +27,8 @@ namespace ProjectPlanExcelAddIn
         {
             this.Text = "Выбор даты";
             this.Size = new System.Drawing.Size(750, 250);
+            this.FormBorderStyle = FormBorderStyle.FixedDialog;
+            this.StartPosition = FormStartPosition.CenterScreen;
 
             for (int i = 0; i < 3; i++)
             {
@@ -48,19 +51,8 @@ namespace ProjectPlanExcelAddIn
 
         private void Calendar_DateSelected(object sender, DateRangeEventArgs e)
         {
-            // Обработка двойного щелчка — так как MonthCalendar не имеет отдельного события DoubleClick по дате,
-            // используем DateSelected + Close сразу
-
-            DateTime selectedDate = e.Start;
-
-            // Вставляем в активную ячейку Excel
-            var excelApp = Globals.ThisAddIn.Application;
-            var activeCell = excelApp.ActiveCell as Excel.Range;
-            if (activeCell != null)
-            {
-                activeCell.Value = selectedDate;
-            }
-
+            SelectedDate = e.Start;
+            this.DialogResult = DialogResult.OK;
             this.Close();
         }
     }
